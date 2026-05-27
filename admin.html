@@ -1,0 +1,337 @@
+<!DOCTYPE html>
+<html lang="fa" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>پنل مدیریت pearlwine</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        
+        body {
+            font-family: 'Vazir', 'Tahoma', sans-serif;
+            background: #1a0a0e;
+            color: #f5e6d3;
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        
+        .password-overlay {
+            position: fixed;
+            inset: 0;
+            background: #0d0408;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 9999;
+            flex-direction: column;
+        }
+        .password-overlay.hidden { display: none; }
+        .password-box {
+            background: #2a1018;
+            padding: 40px;
+            border-radius: 20px;
+            text-align: center;
+            box-shadow: 0 10px 40px rgba(0,0,0,0.6);
+            border: 1px solid #4a1525;
+        }
+        .password-box h2 { color: #d4af37; margin-bottom: 10px; font-size: 1.8rem; }
+        .password-box .lock-icon { font-size: 3rem; display: block; margin-bottom: 15px; }
+        .password-box input {
+            width: 250px;
+            padding: 12px 18px;
+            border: 2px solid #4a1525;
+            background: #1a0a0e;
+            color: #f5e6d3;
+            border-radius: 50px;
+            text-align: center;
+            font-size: 1.1rem;
+            letter-spacing: 3px;
+            outline: none;
+        }
+        .password-box input:focus { border-color: #d4af37; }
+        .password-box button {
+            display: block;
+            width: 100%;
+            margin-top: 15px;
+            padding: 12px;
+            background: #6b1d2f;
+            color: white;
+            border: none;
+            border-radius: 50px;
+            cursor: pointer;
+            font-size: 1rem;
+        }
+        .error-msg { color: #ff6b6b; margin-top: 10px; font-size: 0.85rem; display: none; }
+        .error-msg.show { display: block; }
+        
+        .admin-panel {
+            max-width: 850px;
+            width: 95%;
+            margin: 30px auto;
+            background: #2a1018;
+            padding: 30px;
+            border-radius: 20px;
+            box-shadow: 0 10px 40px rgba(0,0,0,0.6);
+            border: 1px solid #4a1525;
+        }
+        .admin-panel h1 { color: #d4af37; text-align: center; margin-bottom: 5px; font-size: 2rem; }
+        .admin-panel .subtitle { text-align: center; color: #8b6b73; margin-bottom: 25px; font-size: 0.9rem; }
+        .logout-btn {
+            background: #8b0000;
+            color: white;
+            border: none;
+            padding: 8px 20px;
+            border-radius: 50px;
+            cursor: pointer;
+            float: left;
+            font-size: 0.85rem;
+        }
+        
+        .form-group { margin-bottom: 15px; text-align: right; }
+        label { display: block; margin-bottom: 6px; color: #e0c88e; font-weight: 500; }
+        input, select, textarea {
+            width: 100%;
+            padding: 12px 15px;
+            border: 2px solid #4a1525;
+            background: #1a0a0e;
+            color: #f5e6d3;
+            border-radius: 10px;
+            font-family: 'Vazir', 'Tahoma', sans-serif;
+            font-size: 0.9rem;
+            outline: none;
+        }
+        input:focus, select:focus, textarea:focus { border-color: #d4af37; }
+        textarea { resize: vertical; min-height: 80px; }
+        
+        .hint {
+            font-size: 0.75rem;
+            color: #8b6b73;
+            margin-top: 4px;
+        }
+        .hint a {
+            color: #d4af37;
+            text-decoration: underline;
+        }
+        
+        .btn {
+            padding: 12px 30px;
+            border: none;
+            border-radius: 50px;
+            cursor: pointer;
+            font-size: 1rem;
+            font-weight: 600;
+            font-family: 'Vazir', 'Tahoma', sans-serif;
+            transition: all 0.3s;
+        }
+        .btn-add { background: #6b1d2f; color: white; width: 100%; margin-top: 5px; }
+        .btn-add:hover { background: #8b1e3d; }
+        .btn-export { background: #b8944e; color: #1a0a0e; width: 100%; margin-top: 10px; }
+        .btn-export:hover { background: #d4af37; }
+        
+        .success-msg { color: #4caf50; text-align: center; margin-top: 10px; font-weight: 500; display: none; }
+        .success-msg.show { display: block; }
+        
+        .item-list {
+            text-align: right;
+            margin-top: 30px;
+            background: #1a0a0e;
+            padding: 20px;
+            border-radius: 15px;
+            border: 1px solid #3d1020;
+        }
+        .item-list h3 { color: #e0c88e; margin-bottom: 15px; text-align: center; }
+        .item-row {
+            padding: 12px 15px;
+            border-bottom: 1px solid #3d1020;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            gap: 10px;
+        }
+        .item-row:last-child { border-bottom: none; }
+        .item-info { flex: 1; }
+        .item-title { color: #f5e6d3; font-weight: 500; }
+        .item-category { color: #8b6b73; font-size: 0.8rem; }
+        .item-thumb {
+            width: 50px;
+            height: 50px;
+            border-radius: 8px;
+            object-fit: cover;
+            border: 1px solid #4a1525;
+            flex-shrink: 0;
+        }
+        .delete-btn {
+            background: #8b0000;
+            color: white;
+            border: none;
+            padding: 6px 16px;
+            border-radius: 50px;
+            cursor: pointer;
+            font-size: 0.8rem;
+            font-family: 'Vazir', 'Tahoma', sans-serif;
+        }
+        
+        @media (max-width: 600px) {
+            .admin-panel { padding: 20px 15px; }
+            .item-row { flex-wrap: wrap; }
+        }
+    </style>
+</head>
+<body>
+
+    <div class="password-overlay" id="passwordOverlay">
+        <div class="password-box">
+            <span class="lock-icon">🔒</span>
+            <h2>پنل مدیریت</h2>
+            <p style="color:#8b6b73; margin-bottom:20px;">لطفاً رمز عبور را وارد کنید</p>
+            <input type="password" id="passwordInput" placeholder="••••••••••" maxlength="20">
+            <button onclick="checkPassword()">ورود به پنل</button>
+            <p class="error-msg" id="errorMsg">⛔ رمز عبور اشتباه است!</p>
+        </div>
+    </div>
+
+    <div class="admin-panel" id="adminPanel">
+        <button class="logout-btn" onclick="logout()">🚪 خروج</button>
+        <h1>🧵 پنل مدیریت pearlwine</h1>
+        <p class="subtitle">افزودن، حذف و مدیریت لباس‌ها با لینک عکس</p>
+        
+        <form id="addForm">
+            <div class="form-group">
+                <label>📌 عنوان لباس:</label>
+                <input type="text" id="title" required placeholder="مثال: کت و شلوار سرمه‌ای">
+            </div>
+            <div class="form-group">
+                <label>🖼️ لینک عکس لباس:</label>
+                <input type="url" id="imageUrl" placeholder="https://example.com/image.jpg">
+                <p class="hint">
+                    💡 عکست رو توی <a href="https://imgbb.com/" target="_blank">imgbb.com</a> آپلود کن، 
+                    لینک مستقیم (Direct Link) رو بردار و اینجا بذار.
+                </p>
+            </div>
+            <div class="form-group">
+                <label>📂 دسته‌بندی:</label>
+                <select id="category" required>
+                    <option value="suit">کت و شلوار</option>
+                    <option value="shirt">پیراهن</option>
+                    <option value="blouse">شومیز</option>
+                    <option value="skirt">دامن</option>
+                    <option value="other">سایر</option>
+                </select>
+            </div>
+            <div class="form-group">
+                <label>📝 توضیحات:</label>
+                <textarea id="desc" rows="3" required placeholder="توضیحات کامل لباس..."></textarea>
+            </div>
+            <button type="submit" class="btn btn-add">➕ افزودن لباس جدید</button>
+            <p class="success-msg" id="successMsg">✅ لباس جدید با موفقیت اضافه شد!</p>
+        </form>
+
+        <div class="item-list">
+            <h3>📋 لیست لباس‌های فعلی (تعداد: <span id="itemCount">0</span>)</h3>
+            <div id="itemsContainer"></div>
+        </div>
+        
+        <button class="btn btn-export" onclick="exportData()">📥 دانلود فایل داده‌های جدید</button>
+    </div>
+
+    <script src="gallery-data.js"></script>
+    <script>
+        const CORRECT_PASSWORD = 'Nik6836064';
+        
+        function checkPassword() {
+            const input = document.getElementById('passwordInput').value;
+            const errorMsg = document.getElementById('errorMsg');
+            if (input === CORRECT_PASSWORD) {
+                document.getElementById('passwordOverlay').classList.add('hidden');
+                renderList();
+            } else {
+                errorMsg.classList.add('show');
+                document.getElementById('passwordInput').value = '';
+                setTimeout(() => errorMsg.classList.remove('show'), 2000);
+            }
+        }
+        document.getElementById('passwordInput').addEventListener('keypress', function(e) {
+            if (e.key === 'Enter') checkPassword();
+        });
+        function logout() {
+            document.getElementById('passwordOverlay').classList.remove('hidden');
+            document.getElementById('passwordInput').value = '';
+        }
+        
+        function renderList() {
+            const container = document.getElementById('itemsContainer');
+            document.getElementById('itemCount').textContent = galleryItems.length;
+            if (galleryItems.length === 0) {
+                container.innerHTML = '<p style="text-align:center;color:#8b6b73;padding:20px;">هنوز هیچ لباسی اضافه نشده است.</p>';
+                return;
+            }
+            container.innerHTML = galleryItems.map((item, index) => `
+                <div class="item-row">
+                    ${item.image ? `<img src="${item.image}" class="item-thumb" alt="${item.title}" onerror="this.style.display='none'">` : '<div class="item-thumb" style="background:#3d1020;display:flex;align-items:center;justify-content:center;">📷</div>'}
+                    <div class="item-info">
+                        <div class="item-title">${item.title}</div>
+                        <div class="item-category">${item.categoryLabel} ${item.image ? '• دارای عکس' : '• بدون عکس'}</div>
+                    </div>
+                    <button class="delete-btn" onclick="deleteItem(${index})">🗑️ حذف</button>
+                </div>
+            `).join('');
+        }
+        
+        document.getElementById('addForm').addEventListener('submit', function(e) {
+            e.preventDefault();
+            const title = document.getElementById('title').value.trim();
+            const imageUrl = document.getElementById('imageUrl').value.trim();
+            const category = document.getElementById('category').value;
+            const desc = document.getElementById('desc').value.trim();
+            
+            const categoryLabels = {
+                suit: 'کت و شلوار',
+                shirt: 'پیراهن',
+                blouse: 'شومیز',
+                skirt: 'دامن',
+                other: 'سایر'
+            };
+            
+            const newItem = {
+                id: Date.now(),
+                title: title,
+                category: category,
+                categoryLabel: categoryLabels[category],
+                bgClass: category + '-bg',
+                desc: desc,
+                image: imageUrl || ''
+            };
+            
+            galleryItems.push(newItem);
+            renderList();
+            const successMsg = document.getElementById('successMsg');
+            successMsg.classList.add('show');
+            setTimeout(() => successMsg.classList.remove('show'), 3000);
+            this.reset();
+            document.getElementById('title').focus();
+        });
+        
+        function deleteItem(index) {
+            if (confirm('⚠️ آیا از حذف این آیتم مطمئن هستید؟\n\n' + galleryItems[index].title)) {
+                galleryItems.splice(index, 1);
+                renderList();
+            }
+        }
+        
+        function exportData() {
+            const dataStr = '// ==================== داده‌های گالری ====================\nconst galleryItems = ' + JSON.stringify(galleryItems, null, 4) + ';';
+            const blob = new Blob([dataStr], {type: 'application/javascript'});
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = 'gallery-data.js';
+            a.click();
+            alert('✅ فایل داده‌ها دانلود شد!\n\nحالا این فایل رو جایگزین gallery-data.js توی پوشهٔ سایت کن.');
+        }
+        
+        renderList();
+    </script>
+</body>
+</html>
