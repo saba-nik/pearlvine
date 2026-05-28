@@ -1,0 +1,450 @@
+<!DOCTYPE html>
+<html lang="fa" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>پنل مدیریت pearlwine</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        
+        body {
+            font-family: 'Vazir', 'Tahoma', sans-serif;
+            background: #1a0a0e;
+            color: #f5e6d3;
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        
+        .password-overlay {
+            position: fixed;
+            inset: 0;
+            background: #0d0408;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 9999;
+            flex-direction: column;
+        }
+        .password-overlay.hidden { display: none; }
+        .password-box {
+            background: #2a1018;
+            padding: 40px;
+            border-radius: 20px;
+            text-align: center;
+            box-shadow: 0 10px 40px rgba(0,0,0,0.6);
+            border: 1px solid #4a1525;
+        }
+        .password-box h2 { color: #d4af37; margin-bottom: 10px; font-size: 1.8rem; }
+        .password-box .lock-icon { font-size: 3rem; display: block; margin-bottom: 15px; }
+        .password-box input {
+            width: 250px;
+            padding: 12px 18px;
+            border: 2px solid #4a1525;
+            background: #1a0a0e;
+            color: #f5e6d3;
+            border-radius: 50px;
+            text-align: center;
+            font-size: 1.1rem;
+            letter-spacing: 3px;
+            outline: none;
+        }
+        .password-box input:focus { border-color: #d4af37; }
+        .password-box button {
+            display: block;
+            width: 100%;
+            margin-top: 15px;
+            padding: 12px;
+            background: #6b1d2f;
+            color: white;
+            border: none;
+            border-radius: 50px;
+            cursor: pointer;
+            font-size: 1rem;
+        }
+        .error-msg { color: #ff6b6b; margin-top: 10px; font-size: 0.85rem; display: none; }
+        .error-msg.show { display: block; }
+        
+        .admin-panel {
+            max-width: 900px;
+            width: 95%;
+            margin: 30px auto;
+            background: #2a1018;
+            padding: 30px;
+            border-radius: 20px;
+            box-shadow: 0 10px 40px rgba(0,0,0,0.6);
+            border: 1px solid #4a1525;
+        }
+        .admin-panel h1 { color: #d4af37; text-align: center; margin-bottom: 5px; font-size: 2rem; }
+        .admin-panel .subtitle { text-align: center; color: #8b6b73; margin-bottom: 25px; font-size: 0.9rem; }
+        .logout-btn {
+            background: #8b0000;
+            color: white;
+            border: none;
+            padding: 8px 20px;
+            border-radius: 50px;
+            cursor: pointer;
+            float: left;
+            font-size: 0.85rem;
+        }
+        
+        .section-title {
+            color: #e0c88e;
+            margin: 20px 0 10px 0;
+            font-size: 1.1rem;
+            border-bottom: 1px solid #4a1525;
+            padding-bottom: 8px;
+        }
+        
+        .form-group { margin-bottom: 15px; text-align: right; }
+        label { display: block; margin-bottom: 6px; color: #e0c88e; font-weight: 500; }
+        input, select, textarea {
+            width: 100%;
+            padding: 12px 15px;
+            border: 2px solid #4a1525;
+            background: #1a0a0e;
+            color: #f5e6d3;
+            border-radius: 10px;
+            font-family: 'Vazir', 'Tahoma', sans-serif;
+            font-size: 0.9rem;
+            outline: none;
+        }
+        input:focus, select:focus, textarea:focus { border-color: #d4af37; }
+        textarea { resize: vertical; min-height: 80px; }
+        
+        .checkbox-group {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 8px;
+            margin-top: 5px;
+        }
+        .checkbox-label {
+            display: flex;
+            align-items: center;
+            gap: 5px;
+            background: #1a0a0e;
+            padding: 6px 14px;
+            border-radius: 50px;
+            border: 1px solid #4a1525;
+            cursor: pointer;
+            font-size: 0.85rem;
+            transition: all 0.2s;
+        }
+        .checkbox-label:hover { border-color: #d4af37; }
+        .checkbox-label input { display: none; }
+        .checkbox-label.checked { background: #6b1d2f; border-color: #6b1d2f; }
+        
+        .media-row {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 8px;
+            align-items: center;
+        }
+        .media-row input { flex: 1; }
+        .media-row select { width: 100px; }
+        .btn-small {
+            padding: 6px 14px;
+            font-size: 0.8rem;
+            border-radius: 50px;
+            cursor: pointer;
+            border: none;
+            font-family: 'Vazir', 'Tahoma', sans-serif;
+        }
+        
+        .btn {
+            padding: 12px 30px;
+            border: none;
+            border-radius: 50px;
+            cursor: pointer;
+            font-size: 1rem;
+            font-weight: 600;
+            font-family: 'Vazir', 'Tahoma', sans-serif;
+            transition: all 0.3s;
+        }
+        .btn-add { background: #6b1d2f; color: white; width: 100%; margin-top: 5px; }
+        .btn-add:hover { background: #8b1e3d; }
+        .btn-export { background: #b8944e; color: #1a0a0e; width: 100%; margin-top: 10px; }
+        .btn-export:hover { background: #d4af37; }
+        
+        .success-msg { color: #4caf50; text-align: center; margin-top: 10px; font-weight: 500; display: none; }
+        .success-msg.show { display: block; }
+        
+        .item-list {
+            text-align: right;
+            margin-top: 20px;
+            background: #1a0a0e;
+            padding: 20px;
+            border-radius: 15px;
+            border: 1px solid #3d1020;
+        }
+        .item-list h3 { color: #e0c88e; margin-bottom: 15px; text-align: center; }
+        .item-row {
+            padding: 10px 15px;
+            border-bottom: 1px solid #3d1020;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            gap: 10px;
+        }
+        .item-row:last-child { border-bottom: none; }
+        .item-info { flex: 1; }
+        .item-title { color: #f5e6d3; font-weight: 500; }
+        .item-categories { color: #8b6b73; font-size: 0.8rem; }
+        .item-thumb {
+            width: 50px;
+            height: 50px;
+            border-radius: 8px;
+            object-fit: cover;
+            border: 1px solid #4a1525;
+            flex-shrink: 0;
+        }
+        .delete-btn {
+            background: #8b0000;
+            color: white;
+            border: none;
+            padding: 6px 16px;
+            border-radius: 50px;
+            cursor: pointer;
+            font-size: 0.8rem;
+            font-family: 'Vazir', 'Tahoma', sans-serif;
+        }
+        
+        .category-row {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            margin-bottom: 8px;
+        }
+        .category-row input { flex: 1; padding: 8px 12px; }
+        
+        @media (max-width: 600px) {
+            .admin-panel { padding: 20px 15px; }
+            .item-row { flex-wrap: wrap; }
+            .media-row { flex-wrap: wrap; }
+        }
+    </style>
+</head>
+<body>
+
+    <div class="password-overlay" id="passwordOverlay">
+        <div class="password-box">
+            <span class="lock-icon">🔒</span>
+            <h2>پنل مدیریت</h2>
+            <p style="color:#8b6b73; margin-bottom:20px;">لطفاً رمز عبور را وارد کنید</p>
+            <input type="password" id="passwordInput" placeholder="••••••••••" maxlength="20">
+            <button onclick="checkPassword()">ورود به پنل</button>
+            <p class="error-msg" id="errorMsg">⛔ رمز عبور اشتباه است!</p>
+        </div>
+    </div>
+
+    <div class="admin-panel" id="adminPanel">
+        <button class="logout-btn" onclick="logout()">🚪 خروج</button>
+        <h1>🧵 پنل مدیریت pearlwine</h1>
+        <p class="subtitle">افزودن، حذف و مدیریت لباس‌ها | تغییرات در مرورگر ذخیره می‌شود</p>
+        
+        <!-- ==================== بخش مدیریت دسته‌بندی‌ها ==================== -->
+        <div class="section-title">📂 مدیریت دسته‌بندی‌ها</div>
+        <div id="categoriesContainer"></div>
+        <div class="category-row" style="margin-top:10px;">
+            <input type="text" id="newCategoryName" placeholder="نام دسته‌بندی جدید...">
+            <button class="btn-small" style="background:#6b1d2f;color:white;" onclick="addCategory()">➕ افزودن</button>
+        </div>
+        
+        <!-- ==================== بخش افزودن لباس ==================== -->
+        <div class="section-title">👔 افزودن لباس جدید</div>
+        <form id="addForm">
+            <div class="form-group">
+                <label>📌 عنوان لباس:</label>
+                <input type="text" id="title" required placeholder="مثال: کت و شلوار سرمه‌ای">
+            </div>
+            <div class="form-group">
+                <label>🖼️ عکس‌ها و فیلم‌ها:</label>
+                <div id="mediaContainer">
+                    <div class="media-row">
+                        <input type="url" class="media-url" placeholder="لینک عکس یا فیلم...">
+                        <select class="media-type">
+                            <option value="image">🖼️ عکس</option>
+                            <option value="video">🎬 فیلم</option>
+                        </select>
+                    </div>
+                </div>
+                <button type="button" class="btn-small" style="background:#4a1525;color:white;margin-top:8px;" onclick="addMediaField()">➕ افزودن لینک جدید</button>
+                <p style="font-size:0.75rem;color:#8b6b73;margin-top:4px;">
+                    💡 عکس رو توی <a href="https://imgbb.com/" target="_blank" style="color:#d4af37;">imgbb.com</a> و فیلم رو توی <a href="https://imgur.com/" target="_blank" style="color:#d4af37;">imgur.com</a> آپلود کن
+                </p>
+            </div>
+            <div class="form-group">
+                <label>📂 دسته‌بندی‌ها:</label>
+                <div class="checkbox-group" id="categoryCheckboxes"></div>
+            </div>
+            <div class="form-group">
+                <label>📝 توضیحات:</label>
+                <textarea id="desc" rows="3" required placeholder="توضیحات کامل لباس..."></textarea>
+            </div>
+            <button type="submit" class="btn btn-add">➕ افزودن لباس جدید</button>
+            <p class="success-msg" id="successMsg">✅ لباس جدید با موفقیت اضافه شد!</p>
+        </form>
+
+        <!-- ==================== لیست لباس‌ها ==================== -->
+        <div class="item-list">
+            <h3>📋 لیست لباس‌های فعلی (تعداد: <span id="itemCount">0</span>)</h3>
+            <div id="itemsContainer"></div>
+        </div>
+        
+        <button class="btn btn-export" onclick="exportData()">📥 دانلود فایل داده‌های جدید</button>
+        <p style="color:#8b6b73;font-size:0.75rem;text-align:center;margin-top:8px;">
+            ⚠️ بعد از دانلود، فایل را جایگزین gallery-data.js در گیت‌هاب کن
+        </p>
+    </div>
+
+    <script src="gallery-data.js"></script>
+    <script>
+        const CORRECT_PASSWORD = 'Nik6836064';
+        const STORAGE_KEY_ITEMS = 'pearlwine_gallery_items';
+        const STORAGE_KEY_CATEGORIES = 'pearlwine_categories';
+        
+        function checkPassword() {
+            if (document.getElementById('passwordInput').value === CORRECT_PASSWORD) {
+                document.getElementById('passwordOverlay').classList.add('hidden');
+                loadFromStorage();
+                renderAll();
+            } else {
+                document.getElementById('errorMsg').classList.add('show');
+                document.getElementById('passwordInput').value = '';
+                setTimeout(() => document.getElementById('errorMsg').classList.remove('show'), 2000);
+            }
+        }
+        document.getElementById('passwordInput').addEventListener('keypress', e => { if (e.key === 'Enter') checkPassword(); });
+        function logout() { document.getElementById('passwordOverlay').classList.remove('hidden'); document.getElementById('passwordInput').value = ''; }
+        
+        function loadFromStorage() {
+            const savedItems = localStorage.getItem(STORAGE_KEY_ITEMS);
+            const savedCategories = localStorage.getItem(STORAGE_KEY_CATEGORIES);
+            if (savedItems) { galleryItems.length = 0; JSON.parse(savedItems).forEach(item => galleryItems.push(item)); }
+            if (savedCategories) { window.customCategories = JSON.parse(savedCategories); }
+            else {
+                const cats = [...new Set(galleryItems.map(item => item.category))];
+                window.customCategories = cats.map(cat => ({ value: cat, label: galleryItems.find(item => item.category === cat)?.categoryLabel || cat }));
+                saveCategories();
+            }
+        }
+        function saveItems() { localStorage.setItem(STORAGE_KEY_ITEMS, JSON.stringify(galleryItems)); }
+        function saveCategories() { localStorage.setItem(STORAGE_KEY_CATEGORIES, JSON.stringify(window.customCategories)); }
+        
+        function addMediaField() {
+            const container = document.getElementById('mediaContainer');
+            const row = document.createElement('div');
+            row.className = 'media-row';
+            row.innerHTML = `
+                <input type="url" class="media-url" placeholder="لینک عکس یا فیلم...">
+                <select class="media-type">
+                    <option value="image">🖼️ عکس</option>
+                    <option value="video">🎬 فیلم</option>
+                </select>
+                <button type="button" class="btn-small" style="background:#8b0000;color:white;" onclick="this.parentElement.remove()">✕</button>
+            `;
+            container.appendChild(row);
+        }
+        
+        function renderCategories() {
+            document.getElementById('categoriesContainer').innerHTML = window.customCategories.map((cat, i) => `
+                <div class="category-row">
+                    <input type="text" value="${cat.label}" onchange="updateCategory(${i}, this.value)">
+                    <button class="btn-small" style="background:#8b0000;color:white;" onclick="deleteCategory(${i})">🗑️</button>
+                </div>
+            `).join('');
+            
+            const cb = document.getElementById('categoryCheckboxes');
+            cb.innerHTML = window.customCategories.map(cat => `
+                <label class="checkbox-label" data-value="${cat.value}">
+                    <input type="checkbox" value="${cat.value}"> ${cat.label}
+                </label>
+            `).join('');
+            cb.querySelectorAll('.checkbox-label').forEach(label => {
+                label.addEventListener('click', function() {
+                    this.querySelector('input').checked = !this.querySelector('input').checked;
+                    this.classList.toggle('checked', this.querySelector('input').checked);
+                });
+            });
+        }
+        
+        function addCategory() {
+            const name = document.getElementById('newCategoryName').value.trim();
+            if (!name) return;
+            window.customCategories.push({ value: name.replace(/\s+/g, '-').toLowerCase(), label: name });
+            saveCategories(); renderCategories(); document.getElementById('newCategoryName').value = '';
+        }
+        function updateCategory(i, label) { window.customCategories[i].label = label; window.customCategories[i].value = label.replace(/\s+/g, '-').toLowerCase(); saveCategories(); renderCategories(); }
+        function deleteCategory(i) { if (confirm('⚠️ از حذف این دسته‌بندی مطمئنی؟')) { window.customCategories.splice(i, 1); saveCategories(); renderCategories(); } }
+        
+        function renderItems() {
+            const container = document.getElementById('itemsContainer');
+            document.getElementById('itemCount').textContent = galleryItems.length;
+            if (galleryItems.length === 0) { container.innerHTML = '<p style="text-align:center;color:#8b6b73;padding:20px;">هنوز هیچ لباسی اضافه نشده است.</p>'; return; }
+            container.innerHTML = galleryItems.map((item, i) => `
+                <div class="item-row">
+                    ${item.media && item.media.length > 0 ? `<img src="${item.media[0].url}" class="item-thumb" alt="${item.title}" onerror="this.style.display='none'">` : '<div class="item-thumb" style="background:#3d1020;display:flex;align-items:center;justify-content:center;">📷</div>'}
+                    <div class="item-info">
+                        <div class="item-title">${item.title}</div>
+                        <div class="item-categories">${Array.isArray(item.categories) ? item.categories.join(' • ') : (item.categoryLabel || item.category)} ${item.media ? '• 📸' + item.media.length : ''}</div>
+                    </div>
+                    <button class="delete-btn" onclick="deleteItem(${i})">🗑️ حذف</button>
+                </div>
+            `).join('');
+        }
+        function renderAll() { renderCategories(); renderItems(); }
+        
+        document.getElementById('addForm').addEventListener('submit', function(e) {
+            e.preventDefault();
+            const title = document.getElementById('title').value.trim();
+            const desc = document.getElementById('desc').value.trim();
+            
+            const mediaRows = document.querySelectorAll('.media-row');
+            const media = [];
+            mediaRows.forEach(row => {
+                const url = row.querySelector('.media-url').value.trim();
+                const type = row.querySelector('.media-type').value;
+                if (url) media.push({ url, type });
+            });
+            
+            const selected = document.querySelectorAll('#categoryCheckboxes input:checked');
+            const categories = Array.from(selected).map(cb => cb.value);
+            if (categories.length === 0) { alert('⚠️ حداقل یک دسته‌بندی انتخاب کن!'); return; }
+            
+            const primary = categories[0];
+            const catObj = window.customCategories.find(c => c.value === primary) || { label: primary };
+            
+            galleryItems.push({
+                id: Date.now(), title, category: primary, categoryLabel: catObj.label,
+                categories, bgClass: primary + '-bg', desc, media
+            });
+            saveItems(); renderItems();
+            document.getElementById('successMsg').classList.add('show');
+            setTimeout(() => document.getElementById('successMsg').classList.remove('show'), 3000);
+            this.reset();
+            document.getElementById('mediaContainer').innerHTML = `<div class="media-row"><input type="url" class="media-url" placeholder="لینک عکس یا فیلم..."><select class="media-type"><option value="image">🖼️ عکس</option><option value="video">🎬 فیلم</option></select></div>`;
+            document.getElementById('title').focus();
+        });
+        
+        function deleteItem(i) { if (confirm('⚠️ از حذف این آیتم مطمئنی؟\n\n' + galleryItems[i].title)) { galleryItems.splice(i, 1); saveItems(); renderItems(); } }
+        
+        function exportData() {
+            const dataStr = '// ==================== داده‌های گالری ====================\nconst galleryItems = ' + JSON.stringify(galleryItems, null, 4) + ';\n\n// ==================== دسته‌بندی‌ها ====================\nconst galleryCategories = ' + JSON.stringify(window.customCategories, null, 4) + ';';
+            const blob = new Blob([dataStr], {type: 'application/javascript'});
+            const a = document.createElement('a');
+            a.href = URL.createObjectURL(blob);
+            a.download = 'gallery-data.js';
+            a.click();
+            alert('✅ فایل داده‌ها دانلود شد!\n\nحالا این فایل رو جایگزین gallery-data.js توی گیت‌هاب کن.');
+        }
+        
+        if (!window.customCategories) {
+            const cats = [...new Set(galleryItems.map(item => item.category))];
+            window.customCategories = cats.map(cat => ({ value: cat, label: galleryItems.find(item => item.category === cat)?.categoryLabel || cat }));
+            saveCategories();
+        }
+        renderAll();
+    </script>
+</body>
+</html>
